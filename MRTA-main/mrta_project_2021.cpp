@@ -31,7 +31,7 @@ constexpr int INFINITE = std::numeric_limits<int>::max();
  *  SEED : random seed. with same seed, simulator will generate exactly same random results including (map, object, tasks, actions etc.)
  *  SIMULATOR_VERBOSE : if true, print out maps
  */
-constexpr int MAP_SIZE = 20;
+constexpr int MAP_SIZE = 40;
 constexpr int TIME_MAX = MAP_SIZE * 100;
 constexpr int NUM_ROBOT = 6;
 constexpr int NUM_RTYPE = 3;
@@ -641,7 +641,7 @@ struct Scheduler
 class MyScheduler : public Scheduler
 {
 public:
-	// TODO: WALL 에너지 어떻게 줄지 고민, Drone이 Task 어떻게 찾을지
+	// TODO: WALL 3면으로 둘러 싸였을때 알고리즘, 타겟으로 들어갔을때 주변 4개 중에서 WALL이 3개 이상인 곳으로 안 들어가게 설계
 	Action pre_action[2 * NUM_ROBOT] = {HOLD, HOLD, HOLD, HOLD, HOLD, HOLD, HOLD, HOLD, HOLD, HOLD, HOLD, HOLD};
 	int robot_allocate_task[NUM_ROBOT] = {-1, -1, -1, -1, -1, -1};
 
@@ -695,30 +695,43 @@ public:
 		// }
 		// std::cout<<std::endl;
 
-		//두개의 DRONE 사이의 상대적 높이 위치 결정
+		//두개의 DRONE 사이의 상대적 위치 결정
 		if (!check_relative_position)
 		{
-			if (robot_list[0].coord.y >= robot_list[3].coord.y)
+			if (robot_list[0].coord.y >= robot_list[3].coord.y && robot_list[0].coord.x >= robot_list[3].coord.x)
+			{
+				pre_action[robot_list[0].id * 2 + 0] = DOWN;
+				pre_action[robot_list[0].id * 2 + 1] = LEFT;
+				pre_action[robot_list[3].id * 2 + 0] = UP;
+				pre_action[robot_list[3].id * 2 + 1] = RIGHT;
+			}
+			else if (robot_list[0].coord.y >= robot_list[3].coord.y && robot_list[0].coord.x < robot_list[3].coord.x)
 			{
 				pre_action[robot_list[0].id * 2 + 0] = DOWN;
 				pre_action[robot_list[0].id * 2 + 1] = RIGHT;
 				pre_action[robot_list[3].id * 2 + 0] = UP;
 				pre_action[robot_list[3].id * 2 + 1] = LEFT;
 			}
-			else
+			else if (robot_list[0].coord.y < robot_list[3].coord.y && robot_list[0].coord.x >= robot_list[3].coord.x)
 			{
 				pre_action[robot_list[0].id * 2 + 0] = UP;
 				pre_action[robot_list[0].id * 2 + 1] = LEFT;
 				pre_action[robot_list[3].id * 2 + 0] = DOWN;
 				pre_action[robot_list[3].id * 2 + 1] = RIGHT;
 			}
+			else
+			{
+				pre_action[robot_list[0].id * 2 + 0] = UP;
+				pre_action[robot_list[0].id * 2 + 1] = RIGHT;
+				pre_action[robot_list[3].id * 2 + 0] = DOWN;
+				pre_action[robot_list[3].id * 2 + 1] = LEFT;
+			}
 			check_relative_position = true;
 		}
 
 		int i;
 
-		// for (i = 0; i < 2; i++)
-		for (i = 0; i < 1; i++)
+		for (i = 0; i < 2; i++)
 		{
 			Coord temp = drone_target_coord[i] - robot_list[i * NUM_RTYPE].coord;
 			int len = std::abs(temp.x) + std::abs(temp.y);
@@ -732,8 +745,7 @@ public:
 				{
 					if (pre_action[robot_list[i * NUM_RTYPE].id * 2 + 1] == LEFT)
 					{
-						std::cout << "LEFT" << std::endl;
-						for (int j = 0; j < robot_list[i * NUM_RTYPE].coord.x; j++)
+						for (j = 0; j < robot_list[i * NUM_RTYPE].coord.x; j++)
 						{
 							if (!check_range_over_drone(Coord{j, robot_list[i * NUM_RTYPE].coord.y}))
 							{
@@ -750,8 +762,7 @@ public:
 					}
 					else
 					{
-						std::cout << "RIGHT" << std::endl;
-						for (int j = MAP_SIZE - 1; j > robot_list[i * NUM_RTYPE].coord.x; j--)
+						for (j = MAP_SIZE - 1; j > robot_list[i * NUM_RTYPE].coord.x; j--)
 						{
 							if (!check_range_over_drone(Coord{j, robot_list[i * NUM_RTYPE].coord.y}))
 							{
@@ -1105,8 +1116,8 @@ int main()
 
 		int num_exhausted = 0;
 		// simulate robot behavior
-		// for (int index = 0; index < NUM_ROBOT; index++)
-		for (int index = 0; index < 1; index++)
+		for (int index = 0; index < NUM_ROBOT; index++)
+		// for (int index = 0; index < 1; index++)
 		{
 			Robot &current_robot = robots[index];
 
