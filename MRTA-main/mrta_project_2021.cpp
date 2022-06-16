@@ -31,7 +31,7 @@ constexpr int INFINITE = std::numeric_limits<int>::max();
  *  SEED : random seed. with same seed, simulator will generate exactly same random results including (map, object, tasks, actions etc.)
  *  SIMULATOR_VERBOSE : if true, print out maps
  */
-constexpr int MAP_SIZE = 20;
+constexpr int MAP_SIZE = 40;
 constexpr int TIME_MAX = MAP_SIZE * 100;
 constexpr int NUM_ROBOT = 6;
 constexpr int NUM_RTYPE = 3;
@@ -1108,13 +1108,6 @@ int main()
 				   num_working_robots == 0;
 	}
 
-	// for(auto elem : uncharted_tasks){
-	//     std::cout<<"key : "<<elem.first<<" value : "<<elem.second<<std::endl;
-	// }
-	// for(auto elem : active_tasks){
-	//     std::cout<<"id : "<< elem.id() <<", coord : " << elem.coord() <<std::endl;
-	// }
-
 	if (all_done)
 		std::cout << "Finished all tasks at time " << time << ".\n";
 
@@ -1134,9 +1127,6 @@ int main()
 	// printKnownMap(0);
 	// printKnownMap(1);
 	// printKnownMap(2);
-
-	// Robot &current_robot = robots[3];
-	// std::cout << current_robot.type << " " << current_robot.id <<std::endl;
 
 	return 0;
 }
