@@ -214,7 +214,6 @@ public:
 		return taskCost_[type];
 	}
 
-
 	static Task generate_random(int id)
 	{
 		Coord position = get_random_empty_position();
@@ -254,7 +253,7 @@ public:
 	 * @brief Get the cost by a specified robot type.
 	 */
 	int get_cost_by_type(RobotType type) const noexcept { return task_->get_cost_by_type(type); }
-	
+
 	TaskView(const Task &task) : task_{std::addressof(task)} {}
 	friend void reveal_square_range(Coord centre, int view_range, std::vector<TaskView> &active_tasks);
 	friend void reveal_cross_range(Coord center, int view_range, std::vector<TaskView> &active_tasks);
@@ -644,39 +643,43 @@ class MyScheduler : public Scheduler
 public:
 	// TODO: WALL 에너지 어떻게 줄지 고민, Drone이 Task 어떻게 찾을지
 	Action pre_action[2 * NUM_ROBOT] = {HOLD, HOLD, HOLD, HOLD, HOLD, HOLD, HOLD, HOLD, HOLD, HOLD, HOLD, HOLD};
-	int robot_allocate_task[NUM_ROBOT] = {-1,-1,-1,-1,-1,-1};
+	int robot_allocate_task[NUM_ROBOT] = {-1, -1, -1, -1, -1, -1};
 
-	template<class C, typename T>
-	bool contains(C&& c, T t) {return std::find(std::begin(c), std::end(c), t) != std::end(c);}
-	
+	template <class C, typename T>
+	bool contains(C &&c, T t) { return std::find(std::begin(c), std::end(c), t) != std::end(c); }
+
 	bool check_range_over(Coord target)
 	{
 		return (known_object_at(target) == WALL ||
-			target.x < 0 ||
-			target.y < 0 ||
-			target.x >= MAP_SIZE ||
-			target.y >= MAP_SIZE) ? true : false;
+				target.x < 0 ||
+				target.y < 0 ||
+				target.x >= MAP_SIZE ||
+				target.y >= MAP_SIZE)
+				   ? true
+				   : false;
 	}
 
 	bool check_range_over_drone(Coord target)
 	{
 		return (known_object_at(target) == WALL ||
-			target.x < 2 ||
-			target.y < 2 ||
-			target.x >= MAP_SIZE - 2 ||
-			target.y >= MAP_SIZE - 2) ? true : false;
+				target.x < 2 ||
+				target.y < 2 ||
+				target.x >= MAP_SIZE - 2 ||
+				target.y >= MAP_SIZE - 2)
+				   ? true
+				   : false;
 	}
-	
 
 	const Coord actions[5] =
 		{
-		Coord{0, 1},
-		Coord{0, -1},
-		Coord{-1, 0},
-		Coord{1, 0},
-		Coord{0, 0}};
+			Coord{0, 1},
+			Coord{0, -1},
+			Coord{-1, 0},
+			Coord{1, 0},
+			Coord{0, 0}};
 
 	Coord prev_visited[NUM_ROBOT];
+	Action relative_position[NUM_ROBOT];
 
 	void on_info_updated(const int (&known_objects)[MAP_SIZE][MAP_SIZE],
 						 const int (&known_terrein)[NUM_RTYPE][MAP_SIZE][MAP_SIZE],
@@ -688,10 +691,10 @@ public:
 		// 	std::cout << it.id() << ":"<< it.coord() << ", ";
 		// }
 		// std::cout<<std::endl;
-		
+
 		int i;
 
-		for(i=0; i < NUM_ROBOT; i++)
+		for (i = 0; i < NUM_ROBOT; i++)
 		{
 			robot_allocate_task[i] = -1;
 		}
@@ -719,21 +722,27 @@ public:
 		// 	robot_allocate_task[robot_list[i].id] = min_id;
 		// }
 		/* TASK을 기준으로 최저거리 로봇에 TASK 할당. */
-		for(auto it : active_tasks)
+		for (auto it : active_tasks)
 		{
 			int min_id = -1;
 			int min = INFINITE;
-			for(i=0; i < NUM_ROBOT; i++)
+			for (i = 0; i < NUM_ROBOT; i++)
 			{
-				if(robot_list[i].type == DRONE || robot_list[i].energy == 0){continue;}
-				if(robot_allocate_task[i] != -1){continue;}
+				if (robot_list[i].type == DRONE || robot_list[i].energy == 0)
+				{
+					continue;
+				}
+				if (robot_allocate_task[i] != -1)
+				{
+					continue;
+				}
 				Coord temp = robot_list[i].coord - it.coord();
 				// if(min > temp.x * temp.x + temp.y * temp.y) //직선거리로 비교해서 최소 거리에 있는 Robot에 Task 할당
 				// {
 				// 	min = temp.x * temp.x + temp.y * temp.y;
 				// 	min_id=it.id();
 				// }
-				if(min > std::abs(temp.x) + std::abs(temp.y)) //이동거리로 비교해서 최소 거리에 있는 Robot에 Task 할당
+				if (min > std::abs(temp.x) + std::abs(temp.y)) //이동거리로 비교해서 최소 거리에 있는 Robot에 Task 할당
 				{
 					min = std::abs(temp.x) + std::abs(temp.y);
 					min_id = i;
@@ -741,7 +750,7 @@ public:
 			}
 			robot_allocate_task[min_id] = it.id();
 		}
-		std::cout <<"robot_allocate_task:" <<robot_allocate_task[0] <<" "<< robot_allocate_task[1] <<" "<< robot_allocate_task[2] <<" "<< robot_allocate_task[3] <<" "<< robot_allocate_task[4] <<" "<< robot_allocate_task[5] <<" "<< std::endl;
+		std::cout << "robot_allocate_task:" << robot_allocate_task[0] << " " << robot_allocate_task[1] << " " << robot_allocate_task[2] << " " << robot_allocate_task[3] << " " << robot_allocate_task[4] << " " << robot_allocate_task[5] << " " << std::endl;
 	}
 
 	bool on_task_reached(const int (&known_objects)[MAP_SIZE][MAP_SIZE],
@@ -760,12 +769,12 @@ public:
 								 const Robot (&robot_list)[NUM_ROBOT],
 								 const Robot &current_robot) override
 	{
-		if(current_robot.type == DRONE)
+		if (current_robot.type == DRONE)
 		{
-			if(pre_action[current_robot.id * 2 + 0] == HOLD)
+			if (pre_action[current_robot.id * 2 + 0] == HOLD)
 			{
-				pre_action[current_robot.id * 2 + 0] = static_cast<Action>(rand() % 4); 
-				pre_action[current_robot.id * 2 + 1] = static_cast<Action>(rand() % 4); 
+				pre_action[current_robot.id * 2 + 0] = static_cast<Action>(rand() % 4);
+				pre_action[current_robot.id * 2 + 1] = static_cast<Action>(rand() % 4);
 				return pre_action[current_robot.id * 2 + rand() % 2];
 			}
 			else
@@ -774,30 +783,33 @@ public:
 				Coord target2 = current_robot.coord + actions[static_cast<int>(pre_action[current_robot.id * 2 + 1])];
 				Action target_action = pre_action[current_robot.id * 2 + rand() % 2];
 				Coord target = current_robot.coord + actions[static_cast<int>(target_action)];
-				
-				if((known_object_at(target1) == WALL && known_object_at(target2) == WALL) ||
+
+				if ((known_object_at(target1) == WALL && known_object_at(target2) == WALL) ||
 					target.x < 2 ||
 					target.y < 2 ||
-					target.x >= MAP_SIZE-2 ||
-					target.y >= MAP_SIZE-2)
+					target.x >= MAP_SIZE - 2 ||
+					target.y >= MAP_SIZE - 2)
 				{
 					pre_action[current_robot.id * 2 + 0] = HOLD;
 					pre_action[current_robot.id * 2 + 1] = HOLD;
 					// return static_cast<Action>(rand() % 5);
 					return HOLD;
-				}	
+				}
 				return target_action;
 			}
 		}
-		else //Robot type != DRONE
+		else // Robot type != DRONE
 		{
-			if(robot_allocate_task[current_robot.id] == -1){return HOLD;} //allocated task is None
+			if (robot_allocate_task[current_robot.id] == -1)
+			{
+				return HOLD;
+			} // allocated task is None
 			else
 			{
 				Coord target;
-				for(auto it : active_tasks)
+				for (auto it : active_tasks)
 				{
-					if(it.id() == robot_allocate_task[current_robot.id])
+					if (it.id() == robot_allocate_task[current_robot.id])
 					{
 						target = it.coord();
 						break;
@@ -805,7 +817,6 @@ public:
 				}
 				return A_optimal(known_objects, known_terrein, current_robot, target);
 			}
-
 		}
 
 		return HOLD;
@@ -813,19 +824,19 @@ public:
 	}
 
 	Action A_optimal(const int (&known_objects)[MAP_SIZE][MAP_SIZE],
-			   const int (&known_terrein)[NUM_RTYPE][MAP_SIZE][MAP_SIZE],
-			   const Robot &current_robot, Coord target_coord)
+					 const int (&known_terrein)[NUM_RTYPE][MAP_SIZE][MAP_SIZE],
+					 const Robot &current_robot, Coord target_coord)
 	{
-		
+
 		Coord temp;
 		float F_list[4];
 		float min = 100000000;
 
-		for(int i=0; i<4; i++)
-		{	
+		for (int i = 0; i < 4; i++)
+		{
 			float F = 100000000, G = 0, H = 0;
 			temp = current_robot.coord + actions[i];
-			if(!check_range_over(temp))
+			if (!check_range_over(temp))
 			{
 				G = static_cast<float>(known_terrein[current_robot.type][temp.x][temp.y]);
 				H = find_h(known_terrein, current_robot, temp, target_coord);
@@ -834,9 +845,9 @@ public:
 			F_list[i] = F;
 		}
 		int action = 4;
-		for(int i=0; i<4; i++)
+		for (int i = 0; i < 4; i++)
 		{
-			if(min > F_list[i] && current_robot.coord + actions[i] != prev_visited[current_robot.id])
+			if (min > F_list[i] && current_robot.coord + actions[i] != prev_visited[current_robot.id])
 			{
 				min = F_list[i];
 				action = i;
@@ -849,12 +860,12 @@ public:
 	{
 		int num_matrix = 0;
 		float sum = 0;
-		int i,j;
+		int i, j;
 
 		num_matrix = (std::abs(target_coord.x - temp.x) + 1) * (std::abs(target_coord.y - temp.y) + 1);
-		for(i=std::min(temp.x, target_coord.x); i<=std::max(temp.x ,target_coord.x); i++)
+		for (i = std::min(temp.x, target_coord.x); i <= std::max(temp.x, target_coord.x); i++)
 		{
-			for(j=std::min(temp.y, target_coord.y); j<=std::max(temp.y ,target_coord.y); j++)
+			for (j = std::min(temp.y, target_coord.y); j <= std::max(temp.y, target_coord.y); j++)
 			{
 				sum += static_cast<float>(known_terrein[current_robot.type][i][j]);
 			}
@@ -918,7 +929,6 @@ int main()
 		std::cout << "Press Enter to start simulation." << std::endl;
 		std::getchar();
 	}
-
 
 	// variable to check if all tasks are done
 	bool all_done = false;
@@ -1536,6 +1546,5 @@ void printKnownMap(int type)
 	}
 	printf("\n");
 }
-
 
 #pragma endregion details
