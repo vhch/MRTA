@@ -714,15 +714,26 @@ public:
 			}
 			check_relative_position = true;
 		}
-		for (int i = 0; i < 2; i++)
+
+		int i;
+
+		// for (i = 0; i < 2; i++)
+		for (i = 0; i < 1; i++)
 		{
-			if (robot_list[i * NUM_RTYPE].coord == drone_target_coord[i] || drone_target_coord[i] == Coord{-1, -1})
+			Coord temp = drone_target_coord[i] - robot_list[i * NUM_RTYPE].coord;
+			int len = std::abs(temp.x) + std::abs(temp.y);
+
+			if (robot_list[i * NUM_RTYPE].coord == drone_target_coord[i] ||
+				drone_target_coord[i] == Coord{-1, -1} ||
+				((known_object_at(drone_target_coord[i]) == WALL) && (len < 5)))
 			{
+				int j;
 				if (!check_direction[i]) // 수평방향으로 이동 설정
 				{
 					if (pre_action[robot_list[i * NUM_RTYPE].id * 2 + 1] == LEFT)
 					{
-						for (int j = 0; j < MAP_SIZE; j++)
+						std::cout << "LEFT" << std::endl;
+						for (int j = 0; j < robot_list[i * NUM_RTYPE].coord.x; j++)
 						{
 							if (!check_range_over_drone(Coord{j, robot_list[i * NUM_RTYPE].coord.y}))
 							{
@@ -730,18 +741,27 @@ public:
 								break;
 							}
 						}
+						if (j == robot_list[i * NUM_RTYPE].coord.x)
+						{
+							drone_target_coord[i].x = j;
+						}
 						drone_target_coord[i].y = robot_list[i * NUM_RTYPE].coord.y;
 						pre_action[robot_list[i * NUM_RTYPE].id * 2 + 1] = RIGHT;
 					}
 					else
 					{
-						for (int j = MAP_SIZE - 1; j >= 0; j--)
+						std::cout << "RIGHT" << std::endl;
+						for (int j = MAP_SIZE - 1; j > robot_list[i * NUM_RTYPE].coord.x; j--)
 						{
 							if (!check_range_over_drone(Coord{j, robot_list[i * NUM_RTYPE].coord.y}))
 							{
 								drone_target_coord[i].x = j;
 								break;
 							}
+						}
+						if (j == robot_list[i * NUM_RTYPE].coord.x)
+						{
+							drone_target_coord[i].x = j;
 						}
 						drone_target_coord[i].y = robot_list[i * NUM_RTYPE].coord.y;
 						pre_action[robot_list[i * NUM_RTYPE].id * 2 + 1] = LEFT;
@@ -750,56 +770,55 @@ public:
 				}
 				else // 수직방향으로 이동 설정
 				{
-					int j;
-					if (pre_action[robot_list[i * NUM_RTYPE].id * 2 + 0] == UP)//기존에 올라가는 방향으로 탐색중
+					if (pre_action[robot_list[i * NUM_RTYPE].id * 2 + 0] == UP) //기존에 올라가는 방향으로 탐색중
 					{
-						for (int j = robot_list[i * NUM_RTYPE].coord.y + 1; j < MAP_SIZE - 2; j++)
+						for (j = 5; j > 0; j--)
 						{
-							if (!check_range_over_drone(Coord{robot_list[i * NUM_RTYPE].coord.x, j}))
+							if (!check_range_over_drone(Coord{robot_list[i * NUM_RTYPE].coord.x, robot_list[i * NUM_RTYPE].coord.y + j}))
 							{
-								drone_target_coord[i].y = j;
+								drone_target_coord[i].y = robot_list[i * NUM_RTYPE].coord.y + j;
 								drone_target_coord[i].x = robot_list[i * NUM_RTYPE].coord.x;
 								break;
 							}
 						}
-						if (j == MAP_SIZE - 2)
+						if (j == 0)
 						{
-							for (int j = robot_list[i * NUM_RTYPE].coord.y - 1; j > 2; j++)
+							for (j = 5; j > 0; j--)
 							{
-								if (!check_range_over_drone(Coord{robot_list[i * NUM_RTYPE].coord.x, j}))
+								if (!check_range_over_drone(Coord{robot_list[i * NUM_RTYPE].coord.x, robot_list[i * NUM_RTYPE].coord.y - j}))
 								{
-									drone_target_coord[i].y = j;
+									drone_target_coord[i].y = robot_list[i * NUM_RTYPE].coord.y - j;
 									drone_target_coord[i].x = robot_list[i * NUM_RTYPE].coord.x;
 									break;
 								}
 							}
+							pre_action[robot_list[i * NUM_RTYPE].id * 2 + 0] = DOWN;
 						}
-						pre_action[robot_list[i * NUM_RTYPE].id * 2 + 0] = DOWN;
 					}
 					else //내려가는 방향으로 진행하고 있을시
 					{
-						for (int j = robot_list[i * NUM_RTYPE].coord.y - 1; j > 2; j++)
+						for (j = 5; j > 0; j--)
 						{
-							if (!check_range_over_drone(Coord{robot_list[i * NUM_RTYPE].coord.x, j}))
+							if (!check_range_over_drone(Coord{robot_list[i * NUM_RTYPE].coord.x, robot_list[i * NUM_RTYPE].coord.y - j}))
 							{
-								drone_target_coord[i].y = j;
+								drone_target_coord[i].y = robot_list[i * NUM_RTYPE].coord.y - j;
 								drone_target_coord[i].x = robot_list[i * NUM_RTYPE].coord.x;
 								break;
 							}
 						}
-						if (j == 2)
+						if (j == 0)
 						{
-							for (int j = robot_list[i * NUM_RTYPE].coord.y + 1; j < MAP_SIZE - 2; j++)
+							for (j = 5; j > 0; j--)
 							{
-								if (!check_range_over_drone(Coord{robot_list[i * NUM_RTYPE].coord.x, j}))
+								if (!check_range_over_drone(Coord{robot_list[i * NUM_RTYPE].coord.x, robot_list[i * NUM_RTYPE].coord.y + j}))
 								{
-									drone_target_coord[i].y = j;
+									drone_target_coord[i].y = robot_list[i * NUM_RTYPE].coord.y + j;
 									drone_target_coord[i].x = robot_list[i * NUM_RTYPE].coord.x;
 									break;
 								}
 							}
+							pre_action[robot_list[i * NUM_RTYPE].id * 2 + 0] = UP;
 						}
-						pre_action[robot_list[i * NUM_RTYPE].id * 2 + 0] = UP;
 					}
 					check_direction[i] = false;
 				}
@@ -807,8 +826,6 @@ public:
 		}
 
 		/***************************Drone외 로봇 할당 작업************************************/
-		int i;
-
 		for (i = 0; i < NUM_ROBOT; i++)
 		{
 			robot_allocate_task[i] = -1;
@@ -1322,7 +1339,7 @@ void generateMap(Robot *robots, Task *all_tasks, std::unordered_map<Coord, Task 
 				// terreinMatrix[0][ii][jj] = 9999;
 				// terreinMatrix[1][ii][jj] = 9999;
 				// terreinMatrix[2][ii][jj] = 9999;
-				terreinMatrix[0][ii][jj] = droneCost;
+				terreinMatrix[0][ii][jj] = 210;
 				terreinMatrix[1][ii][jj] = 500;
 				terreinMatrix[2][ii][jj] = 850;
 			}
