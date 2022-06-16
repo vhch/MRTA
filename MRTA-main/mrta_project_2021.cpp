@@ -679,7 +679,10 @@ public:
 			Coord{0, 0}};
 
 	Coord prev_visited[NUM_ROBOT];
-	Action relative_position[NUM_ROBOT];
+
+	Action relative_position[2] = {HOLD, HOLD};
+	Coord drone_target_coord[2];
+	bool check_direction[2] = {false, false};
 
 	void on_info_updated(const int (&known_objects)[MAP_SIZE][MAP_SIZE],
 						 const int (&known_terrein)[NUM_RTYPE][MAP_SIZE][MAP_SIZE],
@@ -692,6 +695,78 @@ public:
 		// }
 		// std::cout<<std::endl;
 
+		//두개의 DRONE 사이의 상대적 높이 위치 결정
+		if (relative_position[robot_list[0].id / 3] == HOLD && relative_position[robot_list[3].id / 3] == HOLD)
+		{
+			if (robot_list[0].coord.y >= robot_list[3].coord.y)
+			{
+				relative_position[robot_list[0].id / 3] = UP;
+				relative_position[robot_list[3].id / 3] = DOWN;
+				pre_action[robot_list[0].id * 2 + 0] = DOWN;
+				pre_action[robot_list[0].id * 2 + 1] = RIGHT;
+				pre_action[robot_list[3].id * 2 + 0] = UP;
+				pre_action[robot_list[3].id * 2 + 1] = LEFT;
+			}
+			else
+			{
+				relative_position[robot_list[0].id / 3] = DOWN;
+				relative_position[robot_list[3].id / 3] = UP;
+				pre_action[robot_list[0].id * 2 + 0] = UP;
+				pre_action[robot_list[0].id * 2 + 1] = LEFT;
+				pre_action[robot_list[3].id * 2 + 0] = DOWN;
+				pre_action[robot_list[3].id * 2 + 1] = RIGHT;
+			}
+		}
+		for (int i = 0; i < 2; i++)
+		{
+			if (robot_list[i * NUM_RTYPE].coord == drone_target_coord[i] || drone_target_coord[i] == Coord{-1, -1})
+			{
+				if (!check_direction[i]) // 수평방향으로 이동 설정
+				{
+					if (pre_action[robot_list[i * NUM_RTYPE].id * 2 + 1] == LEFT)
+					{
+						for (int j = 0; j < MAP_SIZE; j++)
+						{
+							if (!check_range_over_drone(Coord{j, robot_list[i * NUM_RTYPE].coord.y}))
+							{
+								drone_target_coord[i].x = j;
+							}
+						}
+						drone_target_coord[i].y = robot_list[i * NUM_RTYPE].coord.y;
+						pre_action[robot_list[i * NUM_RTYPE].id * 2 + 1] = RIGHT;
+					}
+					else
+					{
+						for (int j = MAP_SIZE - 1; j >= 0; j--)
+						{
+							if (!check_range_over_drone(Coord{j, robot_list[i * NUM_RTYPE].coord.y}))
+							{
+								drone_target_coord[i].x = j;
+							}
+						}
+						drone_target_coord[i].y = robot_list[i * NUM_RTYPE].coord.y;
+						pre_action[robot_list[i * NUM_RTYPE].id * 2 + 1] = LEFT;
+					}
+					check_direction[i] = true;
+				}
+				else // TODO: 수직방향으로 이동 설정
+				{
+					if (pre_action[robot_list[i * NUM_RTYPE].id * 2 + 0] == UP)
+					{
+						if(robot_list[i * NUM_RTYPE].coord.y + 2) 
+						drone_target_coord[i].y = ;
+						drone_target_coord[i].x = robot_list[i * NUM_RTYPE].coord.x;
+					}
+					else
+					{
+
+					}
+					check_direction[i] = false;
+				}
+			}
+		}
+
+		/***************************Drone외의 로봇 할당 작업************************************/
 		int i;
 
 		for (i = 0; i < NUM_ROBOT; i++)
@@ -771,6 +846,9 @@ public:
 	{
 		if (current_robot.type == DRONE)
 		{
+			return A_optimal(known_objects, known_terrein, current_robot, drone_target_coord[current_robot.id / 3]);
+
+			/* 벽에 부딪힐 시 특정 벡터 방향으로 랜덤으로 튕김
 			if (pre_action[current_robot.id * 2 + 0] == HOLD)
 			{
 				pre_action[current_robot.id * 2 + 0] = static_cast<Action>(rand() % 4);
@@ -797,6 +875,7 @@ public:
 				}
 				return target_action;
 			}
+			*/
 		}
 		else // Robot type != DRONE
 		{

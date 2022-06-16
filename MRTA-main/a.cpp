@@ -3,12 +3,12 @@
 #include <vector>
 using namespace std;
 
+int main(void)
+{
 
-
-int main(void){
-    
-    int a=-2;
-    std::cout << std::abs(a) <<endl;
-    
-    return 0;
-} 
+    bool a = false;
+    if (!a)
+    {
+        cout << "check" << endl;
+    }
+}
