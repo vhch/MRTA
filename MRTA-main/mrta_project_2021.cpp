@@ -21,7 +21,7 @@ constexpr int INFINITE = std::numeric_limits<int>::max();
  *  TIME_MAX : total time steps
  *	map generated will be MAP_SIZE x MAP_SIZE grid
  *	NUM_ROBOTS : number of robots in simulation
- *  NUM_RTYPE : number of robot types (currently DRONE, CATERPILLAR , WHEEL
+ *  NUM_RTYPE : number of robot types (currently DRONE, CATERPILLAR , WHEEL)
  *  NUM_MAX_TASKS : total number of tasks to be done
  *  NUM_INITIAL_TASKS : number of tasks generated at the beginning of simulation
  *	MAX_ENERGY : total energy that a single robot has at the beginning of simulation
@@ -31,7 +31,7 @@ constexpr int INFINITE = std::numeric_limits<int>::max();
  *  SEED : random seed. with same seed, simulator will generate exactly same random results including (map, object, tasks, actions etc.)
  *  SIMULATOR_VERBOSE : if true, print out maps
  */
-constexpr int MAP_SIZE = 40;
+constexpr int MAP_SIZE = 20;
 constexpr int TIME_MAX = MAP_SIZE * 100;
 constexpr int NUM_ROBOT = 6;
 constexpr int NUM_RTYPE = 3;
@@ -680,8 +680,8 @@ public:
 
 	Coord prev_visited[NUM_ROBOT];
 
-	Action relative_position[2] = {HOLD, HOLD};
 	Coord drone_target_coord[2];
+	bool check_relative_position = false;
 	bool check_direction[2] = {false, false};
 
 	void on_info_updated(const int (&known_objects)[MAP_SIZE][MAP_SIZE],
@@ -696,12 +696,10 @@ public:
 		// std::cout<<std::endl;
 
 		//두개의 DRONE 사이의 상대적 높이 위치 결정
-		if (relative_position[robot_list[0].id / 3] == HOLD && relative_position[robot_list[3].id / 3] == HOLD)
+		if (!check_relative_position)
 		{
 			if (robot_list[0].coord.y >= robot_list[3].coord.y)
 			{
-				relative_position[robot_list[0].id / 3] = UP;
-				relative_position[robot_list[3].id / 3] = DOWN;
 				pre_action[robot_list[0].id * 2 + 0] = DOWN;
 				pre_action[robot_list[0].id * 2 + 1] = RIGHT;
 				pre_action[robot_list[3].id * 2 + 0] = UP;
@@ -709,13 +707,12 @@ public:
 			}
 			else
 			{
-				relative_position[robot_list[0].id / 3] = DOWN;
-				relative_position[robot_list[3].id / 3] = UP;
 				pre_action[robot_list[0].id * 2 + 0] = UP;
 				pre_action[robot_list[0].id * 2 + 1] = LEFT;
 				pre_action[robot_list[3].id * 2 + 0] = DOWN;
 				pre_action[robot_list[3].id * 2 + 1] = RIGHT;
 			}
+			check_relative_position = true;
 		}
 		for (int i = 0; i < 2; i++)
 		{
@@ -730,6 +727,7 @@ public:
 							if (!check_range_over_drone(Coord{j, robot_list[i * NUM_RTYPE].coord.y}))
 							{
 								drone_target_coord[i].x = j;
+								break;
 							}
 						}
 						drone_target_coord[i].y = robot_list[i * NUM_RTYPE].coord.y;
@@ -742,6 +740,7 @@ public:
 							if (!check_range_over_drone(Coord{j, robot_list[i * NUM_RTYPE].coord.y}))
 							{
 								drone_target_coord[i].x = j;
+								break;
 							}
 						}
 						drone_target_coord[i].y = robot_list[i * NUM_RTYPE].coord.y;
@@ -749,24 +748,65 @@ public:
 					}
 					check_direction[i] = true;
 				}
-				else // TODO: 수직방향으로 이동 설정
+				else // 수직방향으로 이동 설정
 				{
-					if (pre_action[robot_list[i * NUM_RTYPE].id * 2 + 0] == UP)
+					int j;
+					if (pre_action[robot_list[i * NUM_RTYPE].id * 2 + 0] == UP)//기존에 올라가는 방향으로 탐색중
 					{
-						if(robot_list[i * NUM_RTYPE].coord.y + 2) 
-						drone_target_coord[i].y = ;
-						drone_target_coord[i].x = robot_list[i * NUM_RTYPE].coord.x;
+						for (int j = robot_list[i * NUM_RTYPE].coord.y + 1; j < MAP_SIZE - 2; j++)
+						{
+							if (!check_range_over_drone(Coord{robot_list[i * NUM_RTYPE].coord.x, j}))
+							{
+								drone_target_coord[i].y = j;
+								drone_target_coord[i].x = robot_list[i * NUM_RTYPE].coord.x;
+								break;
+							}
+						}
+						if (j == MAP_SIZE - 2)
+						{
+							for (int j = robot_list[i * NUM_RTYPE].coord.y - 1; j > 2; j++)
+							{
+								if (!check_range_over_drone(Coord{robot_list[i * NUM_RTYPE].coord.x, j}))
+								{
+									drone_target_coord[i].y = j;
+									drone_target_coord[i].x = robot_list[i * NUM_RTYPE].coord.x;
+									break;
+								}
+							}
+						}
+						pre_action[robot_list[i * NUM_RTYPE].id * 2 + 0] = DOWN;
 					}
-					else
+					else //내려가는 방향으로 진행하고 있을시
 					{
-
+						for (int j = robot_list[i * NUM_RTYPE].coord.y - 1; j > 2; j++)
+						{
+							if (!check_range_over_drone(Coord{robot_list[i * NUM_RTYPE].coord.x, j}))
+							{
+								drone_target_coord[i].y = j;
+								drone_target_coord[i].x = robot_list[i * NUM_RTYPE].coord.x;
+								break;
+							}
+						}
+						if (j == 2)
+						{
+							for (int j = robot_list[i * NUM_RTYPE].coord.y + 1; j < MAP_SIZE - 2; j++)
+							{
+								if (!check_range_over_drone(Coord{robot_list[i * NUM_RTYPE].coord.x, j}))
+								{
+									drone_target_coord[i].y = j;
+									drone_target_coord[i].x = robot_list[i * NUM_RTYPE].coord.x;
+									break;
+								}
+							}
+						}
+						pre_action[robot_list[i * NUM_RTYPE].id * 2 + 0] = UP;
 					}
 					check_direction[i] = false;
 				}
 			}
 		}
 
-		/***************************Drone외의 로봇 할당 작업************************************/
+		/***************************Drone외 로봇 할당 작업************************************/
 		int i;
 
 		for (i = 0; i < NUM_ROBOT; i++)
@@ -825,7 +865,7 @@ public:
 			}
 			robot_allocate_task[min_id] = it.id();
 		}
-		std::cout << "robot_allocate_task:" << robot_allocate_task[0] << " " << robot_allocate_task[1] << " " << robot_allocate_task[2] << " " << robot_allocate_task[3] << " " << robot_allocate_task[4] << " " << robot_allocate_task[5] << " " << std::endl;
+		// std::cout << "robot_allocate_task:" << robot_allocate_task[0] << " " << robot_allocate_task[1] << " " << robot_allocate_task[2] << " " << robot_allocate_task[3] << " " << robot_allocate_task[4] << " " << robot_allocate_task[5] << " " << std::endl;
 	}
 
 	bool on_task_reached(const int (&known_objects)[MAP_SIZE][MAP_SIZE],
@@ -1048,8 +1088,8 @@ int main()
 
 		int num_exhausted = 0;
 		// simulate robot behavior
-		for (int index = 0; index < NUM_ROBOT; index++)
-		// for (int index = 0; index < 2; index++)
+		// for (int index = 0; index < NUM_ROBOT; index++)
+		for (int index = 0; index < 1; index++)
 		{
 			Robot &current_robot = robots[index];
 

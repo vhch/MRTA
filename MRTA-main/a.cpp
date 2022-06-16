@@ -5,10 +5,14 @@ using namespace std;
 
 int main(void)
 {
-
-    bool a = false;
-    if (!a)
+    int i=0;
+    for(i=0; i<2; i++)
     {
-        cout << "check" << endl;
+        cout << i << endl;
+        if(i==1)
+        {
+            break;
+        }
     }
+    cout << i << endl;
 }
