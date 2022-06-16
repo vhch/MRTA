@@ -658,6 +658,16 @@ public:
 			target.y >= MAP_SIZE) ? true : false;
 	}
 
+	bool check_range_over_drone(Coord target)
+	{
+		return (known_object_at(target) == WALL ||
+			target.x < 2 ||
+			target.y < 2 ||
+			target.x >= MAP_SIZE - 2 ||
+			target.y >= MAP_SIZE - 2) ? true : false;
+	}
+	
+
 	const Coord actions[5] =
 		{
 		Coord{0, 1},
@@ -778,8 +788,6 @@ public:
 				}	
 				return target_action;
 			}
-			std::cout<<"*************"<<std::endl;
-			return static_cast<Action>(rand() % 5);
 		}
 		else //Robot type != DRONE
 		{
