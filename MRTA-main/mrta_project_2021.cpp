@@ -31,7 +31,7 @@ constexpr int INFINITE = std::numeric_limits<int>::max();
  *  SEED : random seed. with same seed, simulator will generate exactly same random results including (map, object, tasks, actions etc.)
  *  SIMULATOR_VERBOSE : if true, print out maps
  */
-constexpr int MAP_SIZE = 40;
+constexpr int MAP_SIZE = 20;
 constexpr int TIME_MAX = MAP_SIZE * 100;
 constexpr int NUM_ROBOT = 6;
 constexpr int NUM_RTYPE = 3;
@@ -659,12 +659,18 @@ public:
 				   : false;
 	}
 
-	bool check_range_over_drone(Coord target)
+	bool check_range_over_drone_x(Coord target)
 	{
 		return (known_object_at(target) == WALL ||
 				target.x < 2 ||
+				target.x >= MAP_SIZE - 2)
+				   ? true
+				   : false;
+	}
+	bool check_range_over_drone_y(Coord target)
+	{
+		return (known_object_at(target) == WALL ||
 				target.y < 2 ||
-				target.x >= MAP_SIZE - 2 ||
 				target.y >= MAP_SIZE - 2)
 				   ? true
 				   : false;
@@ -731,7 +737,8 @@ public:
 
 		int i;
 
-		for (i = 0; i < 2; i++)
+		// for (i = 0; i < 2; i++)
+		for (i = 0; i < 1; i++)
 		{
 			Coord temp = drone_target_coord[i] - robot_list[i * NUM_RTYPE].coord;
 			int len = std::abs(temp.x) + std::abs(temp.y);
@@ -747,7 +754,7 @@ public:
 					{
 						for (j = 0; j < robot_list[i * NUM_RTYPE].coord.x; j++)
 						{
-							if (!check_range_over_drone(Coord{j, robot_list[i * NUM_RTYPE].coord.y}))
+							if (!check_range_over_drone_x(Coord{j, robot_list[i * NUM_RTYPE].coord.y}))
 							{
 								drone_target_coord[i].x = j;
 								break;
@@ -764,7 +771,7 @@ public:
 					{
 						for (j = MAP_SIZE - 1; j > robot_list[i * NUM_RTYPE].coord.x; j--)
 						{
-							if (!check_range_over_drone(Coord{j, robot_list[i * NUM_RTYPE].coord.y}))
+							if (!check_range_over_drone_x(Coord{j, robot_list[i * NUM_RTYPE].coord.y}))
 							{
 								drone_target_coord[i].x = j;
 								break;
@@ -785,7 +792,7 @@ public:
 					{
 						for (j = 5; j > 0; j--)
 						{
-							if (!check_range_over_drone(Coord{robot_list[i * NUM_RTYPE].coord.x, robot_list[i * NUM_RTYPE].coord.y + j}))
+							if (!check_range_over_drone_y(Coord{robot_list[i * NUM_RTYPE].coord.x, robot_list[i * NUM_RTYPE].coord.y + j}))
 							{
 								drone_target_coord[i].y = robot_list[i * NUM_RTYPE].coord.y + j;
 								drone_target_coord[i].x = robot_list[i * NUM_RTYPE].coord.x;
@@ -796,7 +803,7 @@ public:
 						{
 							for (j = 5; j > 0; j--)
 							{
-								if (!check_range_over_drone(Coord{robot_list[i * NUM_RTYPE].coord.x, robot_list[i * NUM_RTYPE].coord.y - j}))
+								if (!check_range_over_drone_y(Coord{robot_list[i * NUM_RTYPE].coord.x, robot_list[i * NUM_RTYPE].coord.y - j}))
 								{
 									drone_target_coord[i].y = robot_list[i * NUM_RTYPE].coord.y - j;
 									drone_target_coord[i].x = robot_list[i * NUM_RTYPE].coord.x;
@@ -810,7 +817,7 @@ public:
 					{
 						for (j = 5; j > 0; j--)
 						{
-							if (!check_range_over_drone(Coord{robot_list[i * NUM_RTYPE].coord.x, robot_list[i * NUM_RTYPE].coord.y - j}))
+							if (!check_range_over_drone_y(Coord{robot_list[i * NUM_RTYPE].coord.x, robot_list[i * NUM_RTYPE].coord.y - j}))
 							{
 								drone_target_coord[i].y = robot_list[i * NUM_RTYPE].coord.y - j;
 								drone_target_coord[i].x = robot_list[i * NUM_RTYPE].coord.x;
@@ -821,7 +828,7 @@ public:
 						{
 							for (j = 5; j > 0; j--)
 							{
-								if (!check_range_over_drone(Coord{robot_list[i * NUM_RTYPE].coord.x, robot_list[i * NUM_RTYPE].coord.y + j}))
+								if (!check_range_over_drone_y(Coord{robot_list[i * NUM_RTYPE].coord.x, robot_list[i * NUM_RTYPE].coord.y + j}))
 								{
 									drone_target_coord[i].y = robot_list[i * NUM_RTYPE].coord.y + j;
 									drone_target_coord[i].x = robot_list[i * NUM_RTYPE].coord.x;
@@ -835,6 +842,8 @@ public:
 				}
 			}
 		}
+
+		// std::cout << drone_target_coord[0] << std::endl;
 
 		/***************************Drone외 로봇 할당 작업************************************/
 		for (i = 0; i < NUM_ROBOT; i++)
@@ -974,12 +983,18 @@ public:
 					 const int (&known_terrein)[NUM_RTYPE][MAP_SIZE][MAP_SIZE],
 					 const Robot &current_robot, Coord target_coord)
 	{
+		if (target_coord == current_robot.coord)
+		{
+			return HOLD;
+		}
 
 		Coord temp;
 		float F_list[4];
 		float min = 100000000;
 
-		for (int i = 0; i < 4; i++)
+		int i;
+
+		for (i = 0; i < 4; i++)
 		{
 			float F = 100000000, G = 0, H = 0;
 			temp = current_robot.coord + actions[i];
@@ -992,7 +1007,7 @@ public:
 			F_list[i] = F;
 		}
 		int action = 4;
-		for (int i = 0; i < 4; i++)
+		for (i = 0; i < 4; i++)
 		{
 			if (min > F_list[i] && current_robot.coord + actions[i] != prev_visited[current_robot.id])
 			{
@@ -1116,8 +1131,8 @@ int main()
 
 		int num_exhausted = 0;
 		// simulate robot behavior
-		for (int index = 0; index < NUM_ROBOT; index++)
-		// for (int index = 0; index < 1; index++)
+		// for (int index = 0; index < NUM_ROBOT; index++)
+		for (int index = 0; index < 1; index++)
 		{
 			Robot &current_robot = robots[index];
 
@@ -1350,7 +1365,7 @@ void generateMap(Robot *robots, Task *all_tasks, std::unordered_map<Coord, Task 
 				// terreinMatrix[0][ii][jj] = 9999;
 				// terreinMatrix[1][ii][jj] = 9999;
 				// terreinMatrix[2][ii][jj] = 9999;
-				terreinMatrix[0][ii][jj] = 210;
+				terreinMatrix[0][ii][jj] = 300;
 				terreinMatrix[1][ii][jj] = 500;
 				terreinMatrix[2][ii][jj] = 850;
 			}
@@ -1520,7 +1535,7 @@ void printObjects(const Robot *robotList, const Task *all_tasks, int num_tasks)
 
 Coord get_random_empty_position()
 {
-	// TODO: check if there is any empty place in the map.
+	// TODO check if there is any empty place in the map.
 
 	bool valid = false;
 	Coord position;
