@@ -921,7 +921,7 @@ public:
 			}
 			robot_allocate_task[min_id] = it.id();
 		}
-		// std::cout << "robot_allocate_task:" << robot_allocate_task[0] << " " << robot_allocate_task[1] << " " << robot_allocate_task[2] << " " << robot_allocate_task[3] << " " << robot_allocate_task[4] << " " << robot_allocate_task[5] << " " << std::endl;
+		std::cout << "robot_allocate_task:" << robot_allocate_task[0] << " " << robot_allocate_task[1] << " " << robot_allocate_task[2] << " " << robot_allocate_task[3] << " " << robot_allocate_task[4] << " " << robot_allocate_task[5] << " " << std::endl;
 	}
 
 	bool on_task_reached(const int (&known_objects)[MAP_SIZE][MAP_SIZE],
@@ -1017,6 +1017,10 @@ public:
 		{
 			float F = 100000000, G = 0, H = 0;
 			temp = current_robot.coord + actions[i];
+			if(temp == target_coord)
+			{
+				return static_cast<Action>(i);
+			}
 			if (!check_range_over(temp))
 			{
 				G = static_cast<float>(known_terrein[current_robot.type][temp.x][temp.y]);
@@ -1141,7 +1145,7 @@ public:
 				if(min_x > temp.x){min_x = temp.x;}
 				if(min_y > temp.y){min_y = temp.y;}
 				if(max_x < temp.x){max_x = temp.x;}
-				if(max_x < temp.x){max_x = temp.x;}
+				if(max_y < temp.y){max_y = temp.y;}
 				if(temp == target)
 				{
 					return {len, min_x, min_y, max_x, max_y};
