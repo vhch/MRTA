@@ -32,7 +32,7 @@ constexpr int INFINITE = std::numeric_limits<int>::max();
  *  SEED : random seed. with same seed, simulator will generate exactly same random results including (map, object, tasks, actions etc.)
  *  SIMULATOR_VERBOSE : if true, print out maps
  */
-constexpr int MAP_SIZE = 100;
+constexpr int MAP_SIZE = 20;
 constexpr int TIME_MAX = MAP_SIZE * 100;
 constexpr int NUM_ROBOT = 6;
 constexpr int NUM_RTYPE = 3;
@@ -639,7 +639,7 @@ struct Scheduler
  * @brief Scheduling algorithms can be applied by modifying functions below.
  * funtion information available above
  */
-class MyScheduler : public Scheduler
+class MyScheduler : public Scheduler // TODO: DRONE 외의 로봇들이 초기 TASK 할당 안 됐을때 어떻게 활동할지
 {
 public:
 	Action pre_action[2 * NUM_ROBOT] = {HOLD, HOLD, HOLD, HOLD, HOLD, HOLD, HOLD, HOLD, HOLD, HOLD, HOLD, HOLD};
@@ -706,30 +706,30 @@ public:
 		{
 			if (robot_list[0].coord.y >= robot_list[3].coord.y && robot_list[0].coord.x >= robot_list[3].coord.x)
 			{
-				pre_action[robot_list[0].id * 2 + 0] = DOWN;
+				pre_action[robot_list[0].id * 2 + 0] = UP;
 				pre_action[robot_list[0].id * 2 + 1] = LEFT;
-				pre_action[robot_list[3].id * 2 + 0] = UP;
+				pre_action[robot_list[3].id * 2 + 0] = DOWN;
 				pre_action[robot_list[3].id * 2 + 1] = RIGHT;
 			}
 			else if (robot_list[0].coord.y >= robot_list[3].coord.y && robot_list[0].coord.x < robot_list[3].coord.x)
 			{
-				pre_action[robot_list[0].id * 2 + 0] = DOWN;
+				pre_action[robot_list[0].id * 2 + 0] = UP;
 				pre_action[robot_list[0].id * 2 + 1] = RIGHT;
-				pre_action[robot_list[3].id * 2 + 0] = UP;
+				pre_action[robot_list[3].id * 2 + 0] = DOWN;
 				pre_action[robot_list[3].id * 2 + 1] = LEFT;
 			}
 			else if (robot_list[0].coord.y < robot_list[3].coord.y && robot_list[0].coord.x >= robot_list[3].coord.x)
 			{
-				pre_action[robot_list[0].id * 2 + 0] = UP;
+				pre_action[robot_list[0].id * 2 + 0] = DOWN;
 				pre_action[robot_list[0].id * 2 + 1] = LEFT;
-				pre_action[robot_list[3].id * 2 + 0] = DOWN;
+				pre_action[robot_list[3].id * 2 + 0] = UP;
 				pre_action[robot_list[3].id * 2 + 1] = RIGHT;
 			}
 			else
 			{
-				pre_action[robot_list[0].id * 2 + 0] = UP;
+				pre_action[robot_list[0].id * 2 + 0] = DOWN;
 				pre_action[robot_list[0].id * 2 + 1] = RIGHT;
-				pre_action[robot_list[3].id * 2 + 0] = DOWN;
+				pre_action[robot_list[3].id * 2 + 0] = UP;
 				pre_action[robot_list[3].id * 2 + 1] = LEFT;
 			}
 			check_relative_position = true;
@@ -1494,7 +1494,7 @@ void generateMap(Robot *robots, Task *all_tasks, std::unordered_map<Coord, Task 
 				// terreinMatrix[0][ii][jj] = 9999;
 				// terreinMatrix[1][ii][jj] = 9999;
 				// terreinMatrix[2][ii][jj] = 9999;
-				terreinMatrix[0][ii][jj] = 300;
+				terreinMatrix[0][ii][jj] = 210;
 				terreinMatrix[1][ii][jj] = 500;
 				terreinMatrix[2][ii][jj] = 850;
 			}
