@@ -32,7 +32,7 @@ constexpr int INFINITE = std::numeric_limits<int>::max();
  *  SEED : random seed. with same seed, simulator will generate exactly same random results including (map, object, tasks, actions etc.)
  *  SIMULATOR_VERBOSE : if true, print out maps
  */
-constexpr int MAP_SIZE = 20;
+constexpr int MAP_SIZE = 100;
 constexpr int TIME_MAX = MAP_SIZE * 100;
 constexpr int NUM_ROBOT = 6;
 constexpr int NUM_RTYPE = 3;
@@ -632,14 +632,15 @@ struct Scheduler
 										 const int (&known_terrein)[NUM_RTYPE][MAP_SIZE][MAP_SIZE],
 										 const std::vector<TaskView> &active_tasks,
 										 const Robot (&robot_list)[NUM_ROBOT],
-										 const Robot &current_robot) = 0;
+										 const Robot &current_robot,
+										 int current_time) = 0;
 };
 
 /*
  * @brief Scheduling algorithms can be applied by modifying functions below.
  * funtion information available above
  */
-class MyScheduler : public Scheduler // TODO: DRONE 외의 로봇들이 초기 TASK 할당 안 됐을때 어떻게 활동할지
+class MyScheduler : public Scheduler // TODO: DRONE 외의 로봇들이 초기 TASK 할당 안 됐을때 어떻게 활동할지, time 1/4 지난 시점에서
 {
 public:
 	Action pre_action[2 * NUM_ROBOT] = {HOLD, HOLD, HOLD, HOLD, HOLD, HOLD, HOLD, HOLD, HOLD, HOLD, HOLD, HOLD};
@@ -745,7 +746,7 @@ public:
 
 			if (robot_list[i * NUM_RTYPE].coord == drone_target_coord[i] ||
 				drone_target_coord[i] == Coord{-1, -1} ||
-				((known_object_at(drone_target_coord[i]) == WALL) && (len < 5)))
+				((known_object_at(drone_target_coord[i]) == WALL) && (len < 3)))
 			{
 				int j;
 				if (!check_direction[i]) // 수평방향으로 이동 설정
@@ -937,47 +938,51 @@ public:
 								 const int (&known_terrein)[NUM_RTYPE][MAP_SIZE][MAP_SIZE],
 								 const std::vector<TaskView> &active_tasks,
 								 const Robot (&robot_list)[NUM_ROBOT],
-								 const Robot &current_robot) override
+								 const Robot &current_robot,
+								 int current_time) override
 	{
 		if (current_robot.type == DRONE)
 		{
 			return A_optimal(known_objects, known_terrein, current_robot, drone_target_coord[current_robot.id / 3]);
-
-			/* 벽에 부딪힐 시 특정 벡터 방향으로 랜덤으로 튕김
-			if (pre_action[current_robot.id * 2 + 0] == HOLD)
-			{
-				pre_action[current_robot.id * 2 + 0] = static_cast<Action>(rand() % 4);
-				pre_action[current_robot.id * 2 + 1] = static_cast<Action>(rand() % 4);
-				return pre_action[current_robot.id * 2 + rand() % 2];
-			}
-			else
-			{
-				Coord target1 = current_robot.coord + actions[static_cast<int>(pre_action[current_robot.id * 2 + 0])];
-				Coord target2 = current_robot.coord + actions[static_cast<int>(pre_action[current_robot.id * 2 + 1])];
-				Action target_action = pre_action[current_robot.id * 2 + rand() % 2];
-				Coord target = current_robot.coord + actions[static_cast<int>(target_action)];
-
-				if ((known_object_at(target1) == WALL && known_object_at(target2) == WALL) ||
-					target.x < 2 ||
-					target.y < 2 ||
-					target.x >= MAP_SIZE - 2 ||
-					target.y >= MAP_SIZE - 2)
-				{
-					pre_action[current_robot.id * 2 + 0] = HOLD;
-					pre_action[current_robot.id * 2 + 1] = HOLD;
-					// return static_cast<Action>(rand() % 5);
-					return HOLD;
-				}
-				return target_action;
-			}
-			*/
+			
 		}
 		else // Robot type != DRONE
 		{
-			if (robot_allocate_task[current_robot.id] == -1)
+			if (robot_allocate_task[current_robot.id] == -1) // allocated task is None
 			{
+				if (current_time >= (TIME_MAX * 4 / 10) ) 
+				{
+					std::cout << current_robot.id << " time :" << current_time << std::endl;
+					//벽에 부딪힐 시 특정 벡터 방향으로 랜덤으로 튕김
+					if (pre_action[current_robot.id * 2 + 0] == HOLD)
+					{
+						pre_action[current_robot.id * 2 + 0] = static_cast<Action>(rand() % 4);
+						pre_action[current_robot.id * 2 + 1] = static_cast<Action>(rand() % 4);
+						return pre_action[current_robot.id * 2 + rand() % 2];
+					}
+					else
+					{
+						Coord target1 = current_robot.coord + actions[static_cast<int>(pre_action[current_robot.id * 2 + 0])];
+						Coord target2 = current_robot.coord + actions[static_cast<int>(pre_action[current_robot.id * 2 + 1])];
+						Action target_action = pre_action[current_robot.id * 2 + rand() % 2];
+						Coord target = current_robot.coord + actions[static_cast<int>(target_action)];
+
+						if ((known_object_at(target1) == WALL && known_object_at(target2) == WALL) ||
+							target.x < 2 ||
+							target.y < 2 ||
+							target.x >= MAP_SIZE - 2 ||
+							target.y >= MAP_SIZE - 2)
+						{
+							pre_action[current_robot.id * 2 + 0] = HOLD;
+							pre_action[current_robot.id * 2 + 1] = HOLD;
+							return static_cast<Action>(rand() % 5);
+							// return HOLD;
+						}
+						return target_action;
+					}
+				}
 				return HOLD;
-			} // allocated task is None
+			} 
 			else
 			{
 				Coord target;
@@ -1383,7 +1388,7 @@ int main()
 			{
 				// decide which direction to move for the robot and add algorithm time
 				now = get_now();
-				Action action = scheduler.calculate_idle_action(knownObject, knownTerrein, active_tasks, robots, current_robot);
+				Action action = scheduler.calculate_idle_action(knownObject, knownTerrein, active_tasks, robots, current_robot, time);
 				update_time_elapsed();
 
 				current_robot.set_target_coordinate(action, /*verbose=*/true);
