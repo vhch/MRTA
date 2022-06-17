@@ -757,15 +757,24 @@ public:
 							if (!check_range_over_drone_x(Coord{j, robot_list[i * NUM_RTYPE].coord.y}))
 							{
 								drone_target_coord[i].x = j;
+								drone_target_coord[i].y = robot_list[i * NUM_RTYPE].coord.y;
+								pre_action[robot_list[i * NUM_RTYPE].id * 2 + 1] = RIGHT;
 								break;
 							}
 						}
 						if (j == robot_list[i * NUM_RTYPE].coord.x)
 						{
-							drone_target_coord[i].x = j;
+							for (j = MAP_SIZE - 1; j > robot_list[i * NUM_RTYPE].coord.x; j--)
+							{
+								if (!check_range_over_drone_x(Coord{j, robot_list[i * NUM_RTYPE].coord.y}))
+								{
+									drone_target_coord[i].x = j;
+									drone_target_coord[i].y = robot_list[i * NUM_RTYPE].coord.y;
+									pre_action[robot_list[i * NUM_RTYPE].id * 2 + 1] = LEFT;
+									break;
+								}
+							}
 						}
-						drone_target_coord[i].y = robot_list[i * NUM_RTYPE].coord.y;
-						pre_action[robot_list[i * NUM_RTYPE].id * 2 + 1] = RIGHT;
 					}
 					else
 					{
@@ -774,15 +783,24 @@ public:
 							if (!check_range_over_drone_x(Coord{j, robot_list[i * NUM_RTYPE].coord.y}))
 							{
 								drone_target_coord[i].x = j;
+								drone_target_coord[i].y = robot_list[i * NUM_RTYPE].coord.y;
+								pre_action[robot_list[i * NUM_RTYPE].id * 2 + 1] = LEFT;
 								break;
 							}
 						}
 						if (j == robot_list[i * NUM_RTYPE].coord.x)
 						{
-							drone_target_coord[i].x = j;
+							for (j = 0; j < robot_list[i * NUM_RTYPE].coord.x; j++)
+							{
+								if (!check_range_over_drone_x(Coord{j, robot_list[i * NUM_RTYPE].coord.y}))
+								{
+									drone_target_coord[i].x = j;
+									drone_target_coord[i].y = robot_list[i * NUM_RTYPE].coord.y;
+									pre_action[robot_list[i * NUM_RTYPE].id * 2 + 1] = RIGHT;
+									break;
+								}
+							}
 						}
-						drone_target_coord[i].y = robot_list[i * NUM_RTYPE].coord.y;
-						pre_action[robot_list[i * NUM_RTYPE].id * 2 + 1] = LEFT;
 					}
 					check_direction[i] = true;
 				}
