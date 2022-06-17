@@ -738,8 +738,8 @@ public:
 
 		int i;
 
-		// for (i = 0; i < 2; i++)
-		for (i = 0; i < 1; i++)
+		for (i = 0; i < 2; i++)
+		// for (i = 0; i < 1; i++)
 		{
 			Coord temp = drone_target_coord[i] - robot_list[i * NUM_RTYPE].coord;
 			int len = std::abs(temp.x) + std::abs(temp.y);
@@ -1257,8 +1257,8 @@ int main()
 
 		int num_exhausted = 0;
 		// simulate robot behavior
-		// for (int index = 0; index < NUM_ROBOT; index++)
-		for (int index = 0; index < 1; index++)
+		for (int index = 0; index < NUM_ROBOT; index++)
+		// for (int index = 0; index < 1; index++)
 		{
 			Robot &current_robot = robots[index];
 
