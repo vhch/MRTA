@@ -640,7 +640,7 @@ struct Scheduler
  * @brief Scheduling algorithms can be applied by modifying functions below.
  * funtion information available above
  */
-class MyScheduler : public Scheduler // TODO: DRONE 외의 로봇들이 초기 TASK 할당 안 됐을때 어떻게 활동할지, time 1/4 지난 시점에서
+class MyScheduler : public Scheduler 
 {
 public:
 	Action pre_action[2 * NUM_ROBOT] = {HOLD, HOLD, HOLD, HOLD, HOLD, HOLD, HOLD, HOLD, HOLD, HOLD, HOLD, HOLD};
@@ -950,7 +950,8 @@ public:
 		{
 			if (robot_allocate_task[current_robot.id] == -1) // allocated task is None
 			{
-				if (current_time >= (TIME_MAX * 4 / 10) ) 
+				if (current_time >= (TIME_MAX * 4 / 10))
+				//TODO: unknown을 좌표 주변 몇개의 블럭으로 평균내서 좌표에 등록 그 값이 큰 값으로 target 등록 
 				{
 					std::cout << current_robot.id << " time :" << current_time << std::endl;
 					//벽에 부딪힐 시 특정 벡터 방향으로 랜덤으로 튕김
@@ -975,8 +976,8 @@ public:
 						{
 							pre_action[current_robot.id * 2 + 0] = HOLD;
 							pre_action[current_robot.id * 2 + 1] = HOLD;
-							return static_cast<Action>(rand() % 5);
-							// return HOLD;
+							// return static_cast<Action>(rand() % 5);
+							return HOLD;
 						}
 						return target_action;
 					}
@@ -1066,23 +1067,6 @@ public:
 		sum = sum / static_cast<float>(num_matrix) * static_cast<float>(len);
 		return sum;
 	}
-	// float find_h(const int (&known_terrein)[NUM_RTYPE][MAP_SIZE][MAP_SIZE], const Robot &current_robot, Coord temp, const Coord target_coord)
-	// {
-	// 	int num_matrix = 0;
-	// 	float sum = 0;
-	// 	int i, j;
-
-	// 	num_matrix = (std::abs(target_coord.x - temp.x) + 1) * (std::abs(target_coord.y - temp.y) + 1);
-	// 	for (i = std::min(temp.x, target_coord.x); i <= std::max(temp.x, target_coord.x); i++)
-	// 	{
-	// 		for (j = std::min(temp.y, target_coord.y); j <= std::max(temp.y, target_coord.y); j++)
-	// 		{
-	// 			sum += static_cast<float>(known_terrein[current_robot.type][i][j]);
-	// 		}
-	// 	}
-	// 	sum = sum / static_cast<float>(num_matrix) * static_cast<float>(std::abs(target_coord.x - temp.x) + std::abs(target_coord.y - temp.y));
-	// 	return sum;
-	// }
 	std::tuple<int, int, int, int, int> bfs(Coord start, Coord target)
 	{
 		bool visit[MAP_SIZE][MAP_SIZE]{};
