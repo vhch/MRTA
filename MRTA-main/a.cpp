@@ -1,17 +1,31 @@
-#include <iostream>
-#include <queue>
-#include <vector>
+#include <cstdio>
+#include <cstdint>
+#include <string>
+#include <tuple>
+
 using namespace std;
 
-int main(void)
-{
-    int i=0;
-    for(i=0; i<2; i++)
-    {
-        if(i==1)
-        {
-            break;
-        }
+tuple<uint64_t, string> func(uint32_t cnt){
+    uint64_t val_a = 0;
+    uint64_t val_b = 1;
+    string text;
+    char buff[24];
+    text.reserve(cnt*2);
+    text += "1";
+    for(uint32_t i=0;i<cnt;i++){
+        tie(val_a, val_b) = make_tuple(val_b, val_a+val_b);
+        sprintf(buff, ",%lu", val_b);
+        text += buff;
     }
-    cout << i << endl;
+    return {val_b, text};
+}
+
+int main(){
+    uint32_t cnt = 10;
+    uint64_t fib;
+    string fib_str;
+    tie(fib, fib_str) = func(cnt);
+    printf("fib sum(%u): %lu\n", cnt, fib);
+    printf("info: %s\n", fib_str.c_str());
+    return 0;
 }

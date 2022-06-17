@@ -13,6 +13,7 @@
 #include <numeric>
 #include <string>
 #include <queue>
+#include <tuple>
 
 constexpr int INFINITE = std::numeric_limits<int>::max();
 
@@ -1052,6 +1053,91 @@ public:
 		}
 		sum = sum / static_cast<float>(num_matrix) * static_cast<float>(std::abs(target_coord.x - temp.x) + std::abs(target_coord.y - temp.y));
 		return sum;
+	}
+	std::tuple<int, int, int, int, int> bfs(Coord start, Coord target)
+	{
+		bool visit[MAP_SIZE][MAP_SIZE]{};
+		std::queue<Coord> q;
+		std::queue<int> q_len;
+		std::queue<int> q_min_xy[2];
+		std::queue<int> q_max_xy[2];
+
+		q.push(start);
+		q_len.push(0);
+
+		if(start.x <= target.x && start.y <= target.y)
+		{
+			q_min_xy[0].push(start.x);
+			q_min_xy[1].push(start.y);
+			q_max_xy[0].push(target.x);
+			q_max_xy[1].push(target.y);
+		}
+		else if(start.x <= target.x && start.y > target.y)
+		{
+			q_min_xy[0].push(start.x);
+			q_min_xy[1].push(target.y);
+			q_max_xy[0].push(target.x);
+			q_max_xy[1].push(start.y);
+		}
+		else if(start.x > target.x && start.y <= target.y)
+		{
+			q_min_xy[0].push(target.x);
+			q_min_xy[1].push(start.y);
+			q_max_xy[0].push(start.x);
+			q_max_xy[1].push(target.y);
+		}
+		else
+		{
+			q_min_xy[0].push(target.x);
+			q_min_xy[1].push(target.y);
+			q_max_xy[0].push(start.x);
+			q_max_xy[1].push(start.y);
+		}
+
+		visit[start.x][start.y] = true;
+
+		while (!q.empty())
+		{
+			Coord x = q.front();
+			q.pop();
+
+			int len = q_len.front();
+			q_len.pop();
+			len += 1;
+
+			int min_x = q_min_xy[0].front();
+			q_min_xy[0].pop();
+			int min_y = q_min_xy[1].front();
+			q_min_xy[1].pop();
+			int max_x = q_max_xy[0].front();
+			q_max_xy[0].pop();
+			int max_y = q_max_xy[1].front();
+			q_max_xy[1].pop();
+
+			for (int i = 0; i < 4; i++)
+			{
+				Coord temp = x + actions[i];
+				if(min_x > temp.x){min_x = temp.x;}
+				if(min_y > temp.y){min_y = temp.y;}
+				if(max_x < temp.x){max_x = temp.x;}
+				if(max_x < temp.x){max_x = temp.x;}
+				if(temp == target)
+				{
+					return {len, min_x, min_y, max_x, max_y};
+
+				}
+				if (!visit[temp.x][temp.y] && !check_range_over(temp))
+				{
+					visit[temp.x][temp.y] = true;
+					q.push(temp);
+					q_len.push(len);
+					q_min_xy[0].push(min_x);
+					q_min_xy[1].push(min_y);
+					q_max_xy[0].push(max_x);
+					q_max_xy[1].push(max_y);
+				}
+			}
+		}
 	}
 };
 
