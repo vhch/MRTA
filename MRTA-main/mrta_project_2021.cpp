@@ -32,7 +32,7 @@ constexpr int INFINITE = std::numeric_limits<int>::max();
  *  SEED : random seed. with same seed, simulator will generate exactly same random results including (map, object, tasks, actions etc.)
  *  SIMULATOR_VERBOSE : if true, print out maps
  */
-constexpr int MAP_SIZE = 40;
+constexpr int MAP_SIZE = 100;
 constexpr int TIME_MAX = MAP_SIZE * 100;
 constexpr int NUM_ROBOT = 6;
 constexpr int NUM_RTYPE = 3;
@@ -642,7 +642,6 @@ struct Scheduler
 class MyScheduler : public Scheduler
 {
 public:
-	// TODO: WALL 3면으로 둘러 싸였을때 알고리즘, 타겟으로 들어갔을때 주변 4개 중에서 WALL이 3개 이상인 곳으로 안 들어가게 설계
 	Action pre_action[2 * NUM_ROBOT] = {HOLD, HOLD, HOLD, HOLD, HOLD, HOLD, HOLD, HOLD, HOLD, HOLD, HOLD, HOLD};
 	int robot_allocate_task[NUM_ROBOT] = {-1, -1, -1, -1, -1, -1};
 
@@ -685,7 +684,7 @@ public:
 			Coord{1, 0},
 			Coord{0, 0}};
 
-	Coord prev_visited[NUM_ROBOT];
+	// Coord prev_visited[NUM_ROBOT];
 
 	Coord drone_target_coord[2];
 	bool check_relative_position = false;
@@ -921,7 +920,7 @@ public:
 			}
 			robot_allocate_task[min_id] = it.id();
 		}
-		std::cout << "robot_allocate_task:" << robot_allocate_task[0] << " " << robot_allocate_task[1] << " " << robot_allocate_task[2] << " " << robot_allocate_task[3] << " " << robot_allocate_task[4] << " " << robot_allocate_task[5] << " " << std::endl;
+		// std::cout << "robot_allocate_task:" << robot_allocate_task[0] << " " << robot_allocate_task[1] << " " << robot_allocate_task[2] << " " << robot_allocate_task[3] << " " << robot_allocate_task[4] << " " << robot_allocate_task[5] << " " << std::endl;
 	}
 
 	bool on_task_reached(const int (&known_objects)[MAP_SIZE][MAP_SIZE],
@@ -1032,13 +1031,13 @@ public:
 		int action = 4;
 		for (i = 0; i < 4; i++)
 		{
-			if (min > F_list[i] && current_robot.coord + actions[i] != prev_visited[current_robot.id])
+			if (min > F_list[i])
 			{
 				min = F_list[i];
 				action = i;
 			}
 		}
-		prev_visited[current_robot.id] = current_robot.coord;
+		// prev_visited[current_robot.id] = current_robot.coord;
 		return static_cast<Action>(action);
 	}
 	float find_h(const int (&known_terrein)[NUM_RTYPE][MAP_SIZE][MAP_SIZE], const Robot &current_robot, Coord temp, const Coord target_coord)
@@ -1421,7 +1420,7 @@ int main()
 	if (all_done)
 		std::cout << "Finished all tasks at time " << time << ".\n";
 
-	// TODO Report
+	//  Report
 	for (int index = 0; index < NUM_ROBOT; index++)
 		std::cout << "robot " << index << " at (" << robots[index].coord << ") status : " << status_strs[robots[index].status] << " remaining energy: " << robots[index].energy << std::endl;
 
@@ -1665,7 +1664,7 @@ void printObjects(const Robot *robotList, const Task *all_tasks, int num_tasks)
 
 Coord get_random_empty_position()
 {
-	// TODO check if there is any empty place in the map.
+	// check if there is any empty place in the map.
 
 	bool valid = false;
 	Coord position;
