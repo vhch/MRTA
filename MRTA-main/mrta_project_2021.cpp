@@ -1042,18 +1042,39 @@ public:
 		int num_matrix = 0;
 		float sum = 0;
 		int i, j;
+		int len, min_x, min_y, max_x, max_y;
 
-		num_matrix = (std::abs(target_coord.x - temp.x) + 1) * (std::abs(target_coord.y - temp.y) + 1);
-		for (i = std::min(temp.x, target_coord.x); i <= std::max(temp.x, target_coord.x); i++)
+		std::tie(len, min_x, min_y, max_x, max_y) = bfs(temp, target_coord);
+		if(len == 0 ){return 100000000;}
+
+		num_matrix = (max_x - min_x + 1) * (max_y - min_y + 1);
+		for (i = min_x; i <= max_x; i++)
 		{
-			for (j = std::min(temp.y, target_coord.y); j <= std::max(temp.y, target_coord.y); j++)
+			for (j = min_y; j <= max_y; j++)
 			{
 				sum += static_cast<float>(known_terrein[current_robot.type][i][j]);
 			}
 		}
-		sum = sum / static_cast<float>(num_matrix) * static_cast<float>(std::abs(target_coord.x - temp.x) + std::abs(target_coord.y - temp.y));
+		sum = sum / static_cast<float>(num_matrix) * static_cast<float>(len);
 		return sum;
 	}
+	// float find_h(const int (&known_terrein)[NUM_RTYPE][MAP_SIZE][MAP_SIZE], const Robot &current_robot, Coord temp, const Coord target_coord)
+	// {
+	// 	int num_matrix = 0;
+	// 	float sum = 0;
+	// 	int i, j;
+
+	// 	num_matrix = (std::abs(target_coord.x - temp.x) + 1) * (std::abs(target_coord.y - temp.y) + 1);
+	// 	for (i = std::min(temp.x, target_coord.x); i <= std::max(temp.x, target_coord.x); i++)
+	// 	{
+	// 		for (j = std::min(temp.y, target_coord.y); j <= std::max(temp.y, target_coord.y); j++)
+	// 		{
+	// 			sum += static_cast<float>(known_terrein[current_robot.type][i][j]);
+	// 		}
+	// 	}
+	// 	sum = sum / static_cast<float>(num_matrix) * static_cast<float>(std::abs(target_coord.x - temp.x) + std::abs(target_coord.y - temp.y));
+	// 	return sum;
+	// }
 	std::tuple<int, int, int, int, int> bfs(Coord start, Coord target)
 	{
 		bool visit[MAP_SIZE][MAP_SIZE]{};
@@ -1138,6 +1159,7 @@ public:
 				}
 			}
 		}
+		return {0,0,0,0,0};
 	}
 };
 
