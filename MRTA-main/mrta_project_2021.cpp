@@ -953,12 +953,12 @@ public:
 				if (current_time >= (TIME_MAX * 4 / 10))
 				//TODO: unknown을 좌표 주변 몇개의 블럭으로 평균내서 좌표에 등록 그 값이 큰 값으로 target 등록 
 				{
-					std::cout << current_robot.id << " time :" << current_time << std::endl;
+					// std::cout << current_robot.id << " time :" << current_time << std::endl;
 					//벽에 부딪힐 시 특정 벡터 방향으로 랜덤으로 튕김
 					if (pre_action[current_robot.id * 2 + 0] == HOLD)
 					{
-						pre_action[current_robot.id * 2 + 0] = static_cast<Action>(rand() % 4);
-						pre_action[current_robot.id * 2 + 1] = static_cast<Action>(rand() % 4);
+						pre_action[current_robot.id * 2 + 0] = static_cast<Action>(rand() % 2);
+						pre_action[current_robot.id * 2 + 1] = static_cast<Action>(rand() % 2 + 2);
 						return pre_action[current_robot.id * 2 + rand() % 2];
 					}
 					else
