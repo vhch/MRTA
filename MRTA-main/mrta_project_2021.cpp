@@ -32,8 +32,8 @@ constexpr int INFINITE = std::numeric_limits<int>::max();
  *  SEED : random seed. with same seed, simulator will generate exactly same random results including (map, object, tasks, actions etc.)
  *  SIMULATOR_VERBOSE : if true, print out maps
  */
-constexpr int MAP_SIZE = 40;
-constexpr int TIME_MAX = MAP_SIZE * 100;
+constexpr int MAP_SIZE = 100;
+constexpr int TIME_MAX = MAP_SIZE * 500;
 constexpr int NUM_ROBOT = 6;
 constexpr int NUM_RTYPE = 3;
 constexpr int NUM_MAX_TASKS = 16;
