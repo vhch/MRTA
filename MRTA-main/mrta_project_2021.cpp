@@ -32,7 +32,7 @@ constexpr int INFINITE = std::numeric_limits<int>::max();
  *  SEED : random seed. with same seed, simulator will generate exactly same random results including (map, object, tasks, actions etc.)
  *  SIMULATOR_VERBOSE : if true, print out maps
  */
-constexpr int MAP_SIZE = 20;
+constexpr int MAP_SIZE = 40;
 constexpr int TIME_MAX = MAP_SIZE * 100;
 constexpr int NUM_ROBOT = 6;
 constexpr int NUM_RTYPE = 3;
@@ -944,35 +944,35 @@ public:
 		if (current_robot.type == DRONE)
 		{
 			// x축 다 탐색하고 y축으로 이동
-			// return A_optimal(known_objects, known_terrein, current_robot, drone_target_coord[current_robot.id / 3]);
+			return A_optimal(known_objects, known_terrein, current_robot, drone_target_coord[current_robot.id / 3]);
 			
-			//벽에 부딪힐 시 특정 벡터 방향으로 랜덤으로 튕김
-			if (pre_action[current_robot.id * 2 + 0] == HOLD)
-				{
-					pre_action[current_robot.id * 2 + 0] = static_cast<Action>(rand() % 2);
-					pre_action[current_robot.id * 2 + 1] = static_cast<Action>(rand() % 2 + 2);
-					return pre_action[current_robot.id * 2 + rand() % 2];
-				}
-				else
-				{
-					Coord target1 = current_robot.coord + actions[static_cast<int>(pre_action[current_robot.id * 2 + 0])];
-					Coord target2 = current_robot.coord + actions[static_cast<int>(pre_action[current_robot.id * 2 + 1])];
-					Action target_action = pre_action[current_robot.id * 2 + rand() % 2];
-					Coord target = current_robot.coord + actions[static_cast<int>(target_action)];
+			// //벽에 부딪힐 시 특정 벡터 방향으로 랜덤으로 튕김
+			// if (pre_action[current_robot.id * 2 + 0] == HOLD)
+			// 	{
+			// 		pre_action[current_robot.id * 2 + 0] = static_cast<Action>(rand() % 2);
+			// 		pre_action[current_robot.id * 2 + 1] = static_cast<Action>(rand() % 2 + 2);
+			// 		return pre_action[current_robot.id * 2 + rand() % 2];
+			// 	}
+			// 	else
+			// 	{
+			// 		Coord target1 = current_robot.coord + actions[static_cast<int>(pre_action[current_robot.id * 2 + 0])];
+			// 		Coord target2 = current_robot.coord + actions[static_cast<int>(pre_action[current_robot.id * 2 + 1])];
+			// 		Action target_action = pre_action[current_robot.id * 2 + rand() % 2];
+			// 		Coord target = current_robot.coord + actions[static_cast<int>(target_action)];
 
-					if ((known_object_at(target1) == WALL && known_object_at(target2) == WALL) ||
-						target.x < 2 ||
-						target.y < 2 ||
-						target.x >= MAP_SIZE - 2 ||
-						target.y >= MAP_SIZE - 2)
-					{
-						pre_action[current_robot.id * 2 + 0] = HOLD;
-						pre_action[current_robot.id * 2 + 1] = HOLD;
-						// return static_cast<Action>(rand() % 5);
-						return HOLD;
-					}
-					return target_action;
-				}
+			// 		if ((known_object_at(target1) == WALL && known_object_at(target2) == WALL) ||
+			// 			target.x < 2 ||
+			// 			target.y < 2 ||
+			// 			target.x >= MAP_SIZE - 2 ||
+			// 			target.y >= MAP_SIZE - 2)
+			// 		{
+			// 			pre_action[current_robot.id * 2 + 0] = HOLD;
+			// 			pre_action[current_robot.id * 2 + 1] = HOLD;
+			// 			// return static_cast<Action>(rand() % 5);
+			// 			return HOLD;
+			// 		}
+			// 		return target_action;
+			// 	}
 		}
 		else // Robot type != DRONE
 		{
