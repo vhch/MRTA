@@ -976,8 +976,8 @@ public:
 						{
 							pre_action[current_robot.id * 2 + 0] = HOLD;
 							pre_action[current_robot.id * 2 + 1] = HOLD;
-							// return static_cast<Action>(rand() % 5);
-							return HOLD;
+							return static_cast<Action>(rand() % 5);
+							// return HOLD;
 						}
 						return target_action;
 					}
